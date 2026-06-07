@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Asistencia - VibraBike</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Tarjetas */
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        /* Formularios */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Zona de cámara */
+        .camera-container {
+            text-align: center;
+        }
+
+        #video {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 10px;
+            border: 2px solid #667eea;
+            margin-bottom: 10px;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        .qr-result {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            word-break: break-all;
+        }
+
+        /* Tabla de alumnos */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .qr-img {
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+        }
+
+        /* Alertas */
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Botones de acción */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #28a745;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🎓 Sistema de Asistencia VibraBike</h1>
+
+    <!-- Alertas -->
+    <div id="alert" class="alert"></div>
+
+    <div class="cards-container">
+        <!-- Tarjeta de registro -->
+        <div class="card">
+            <h2>📝 Registrar Nuevo Alumno</h2>
+            <form id="registroForm">
+                <div class="form-group">
+                    <label>Nombre:</label>
+                    <input type="text" id="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label>Apellido:</label>
+                    <input type="text" id="apellido" required>
+                </div>
+                <div class="form-group">
+                    <label>Matrícula:</label>
+                    <input type="text" id="matricula" required>
+                </div>
+                <div class="form-group">
+                    <label>Correo:</label>
+                    <input type="email" id="correo" required>
+                </div>
+                <button type="submit">Registrar Alumno</button>
+            </form>
+        </div>
+
+        <!-- Tarjeta de escaneo -->
+        <div class="card">
+            <h2>📷 Escanear QR - Registrar Asistencia</h2>
+            <div class="camera-container">
+                <video id="video" autoplay playsinline></video>
+                <canvas id="canvas"></canvas>
+                <button id="scanButton" style="margin-top: 10px;">📸 Iniciar Cámara</button>
+                <div id="qrResult" class="qr-result">
+                    <strong>QR escaneado:</strong> <span id="qrText">Ninguno</span>
+                </div>
+                <button id="registerAttendanceBtn" style="margin-top: 10px; background: #28a745;">✅ Registrar Asistencia</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tarjeta de listado y PDF -->
+    <div class="card">
+        <h2>👥 Listado de Alumnos</h2>
+        <div class="btn-group">
+            <button id="downloadPdfBtn" class="btn-info">📄 Descargar PDF con todos los QR</button>
+            <div class="btn-group">
+                <button id="downloadTarjetasBtn" class="btn-info">🎴 Descargar Tarjetas Digitales (Todos)</button>
+            <button id="refreshListBtn" class="btn-secondary">🔄 Refrescar Lista</button>
+        </div>
+        <div class="table-container">
+            <table id="alumnosTable">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre Completo</th>
+                    <th>Matrícula</th>
+                    <th>Correo</th>
+                    <th>QR</th>
+                    <th>Acción</th>
+                </tr>
+                </thead>
+                <tbody id="alumnosBody">
+                <tr>
+                    <td colspan="6" style="text-align: center;">Cargando alumnos...</td>
+                    <td>
+                        <button onclick="descargarTarjeta(${alumno.id})" style="padding: 5px 10px; font-size: 12px; background: linear-gradient(135deg, #1e90ff, #00bfff); color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            🎴 Tarjeta
+                        </button>
+                        <button onclick="descargarPDFAlumno(${alumno.id})" style="padding: 5px 10px; font-size: 12px; margin-top: 5px;">📄 QR</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Configuración
+    const API_BASE = 'http://localhost:8080/api/v1';
+    let currentScannedQR = null;
+    let videoStream = null;
+    let scanningActive = false;
+
+    // Elementos DOM
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const qrTextSpan = document.getElementById('qrText');
+    const alertDiv = document.getElementById('alert');
+
+    // Mostrar alerta
+    function showAlert(message, type) {
+        alertDiv.className = `alert alert-${type}`;
+        alertDiv.textContent = message;
+        alertDiv.style.display = 'block';
+        setTimeout(() => {
+            alertDiv.style.display = 'none';
+        }, 5000);
+    }
+
+    // Registrar alumno
+    document.getElementById('registroForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const alumnoData = {
+            nombre: document.getElementById('nombre').value,
+            apellido: document.getElementById('apellido').value,
+            matricula: document.getElementById('matricula').value,
+            correo: document.getElementById('correo').value
+        };
+
+        try {
+            const response = await fetch(`${API_BASE}/alumnos`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(alumnoData)
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                showAlert(`✅ Alumno ${data.nombre} ${data.apellido} registrado exitosamente. QR UUID: ${data.qrUuid}`, 'success');
+                document.getElementById('registroForm').reset();
+                cargarAlumnos();
+            } else {
+                const error = await response.text();
+                showAlert(`❌ Error: ${error}`, 'error');
+            }
+        } catch (error) {
+            showAlert(`❌ Error de conexión: ${error.message}`, 'error');
+        }
+    });
+
+    // Cargar listado de alumnos
+    async function cargarAlumnos() {
+        try {
+            const response = await fetch(`${API_BASE}/alumnos`);
+            if (response.ok) {
+                const alumnos = await response.json();
+                const tbody = document.getElementById('alumnosBody');
+
+                if (alumnos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No hay alumnos registrados</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = alumnos.map(alumno => `
+                    <tr>
+                        <td>${alumno.id}</td>
+                        <td>${alumno.nombre} ${alumno.apellido}</td>
+                        <td>${alumno.matricula}</td>
+                        <td>${alumno.correo}</td>
+                        <td>
+                            <img src="${API_BASE}/alumnos/${alumno.id}/qr"
+                                 class="qr-img"
+                                 onclick="window.open('${API_BASE}/alumnos/${alumno.id}/qr', '_blank')"
+                                 title="Click para ver QR ampliado">
+                        </td>
+                        <td>
+                            <button onclick="descargarPDFAlumno(${alumno.id})" style="padding: 5px 10px; font-size: 12px;">📄 PDF</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        } catch (error) {
+            console.error('Error cargando alumnos:', error);
+        }
+    }
+
+    // Descargar PDF de un alumno específico
+    window.descargarTarjeta = async (id) => {
+    try {
+        window.open(`${API_BASE}/alumnos/${id}/tarjeta`, '_blank');
+    } catch (error) {
+        console.error('Error al descargar tarjeta:', error);
+        showAlert('Error al descargar tarjeta', 'error');
+    }
+};
+
+    // Descargar PDF de todos
+    document.getElementById('downloadPdfBtn').addEventListener('click', () => {
+        window.open(`${API_BASE}/alumnos/pdf`, '_blank');
+    });
+
+    // Refrescar lista
+    document.getElementById('refreshListBtn').addEventListener('click', () => {
+        cargarAlumnos();
+        showAlert('Lista actualizada', 'success');
+    });
+
+    // Iniciar cámara
+    async function iniciarCamara() {
+        try {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+            }
+
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            video.srcObject = stream;
+            videoStream = stream;
+            scanningActive = true;
+            showAlert('Cámara iniciada. Apunta a un código QR.', 'success');
+            empezarEscaneo();
+        } catch (error) {
+            showAlert('Error al acceder a la cámara: ' + error.message, 'error');
+        }
+    }
+
+    // Escanear QR continuamente
+    function empezarEscaneo() {
+        if (!scanningActive) return;
+
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, canvas.width, canvas.height);
+
+            if (code) {
+                const qrText = code.data;
+                qrTextSpan.textContent = qrText;
+                currentScannedQR = qrText;
+                showAlert(`QR detectado: ${qrText.substring(0, 20)}...`, 'success');
+                scanningActive = false;
+                detenerCamara();
+            } else {
+                requestAnimationFrame(empezarEscaneo);
+            }
+        } else {
+            requestAnimationFrame(empezarEscaneo);
+        }
+    }
+
+    // Detener cámara
+    function detenerCamara() {
+        if (videoStream) {
+            videoStream.getTracks().forEach(track => track.stop());
+            videoStream = null;
+        }
+        scanningActive = false;
+    }
+
+    // Registrar asistencia con el QR escaneado
+    document.getElementById('registerAttendanceBtn').addEventListener('click', async () => {
+        if (!currentScannedQR) {
+            showAlert('No hay ningún QR escaneado. Escanea un QR primero.', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE}/asistencias`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ qrUuid: currentScannedQR })
+            });
+
+            if (response.ok) {
+                showAlert(`✅ Asistencia registrada exitosamente para QR: ${currentScannedQR.substring(0, 20)}...`, 'success');
+                qrTextSpan.textContent = 'Ninguno';
+                currentScannedQR = null;
+            } else {
+                const error = await response.text();
+                showAlert(`❌ Error: ${error}`, 'error');
+            }
+        } catch (error) {
+            showAlert(`❌ Error de conexión: ${error.message}`, 'error');
+        }
+    });
+
+    // Botón de escaneo
+    document.getElementById('scanButton').addEventListener('click', () => {
+        iniciarCamara();
+    });
+
+    // Cargar alumnos al inicio
+    cargarAlumnos();
+</script>
+
+<!-- Librería jsQR para escanear QR -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+</body>
+</html>
