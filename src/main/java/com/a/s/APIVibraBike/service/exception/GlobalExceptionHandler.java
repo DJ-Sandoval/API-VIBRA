@@ -33,4 +33,18 @@ public class GlobalExceptionHandler {
                 errors.put(error.getField(), error.getDefaultMessage()));
         return ResponseEntity.badRequest().body(errors);
     }
+
+    @ExceptionHandler(LimiteAsistenciaExcedidoException.class)
+    public ResponseEntity<Map<String, String>> handleLimiteAsistencia(
+            LimiteAsistenciaExcedidoException ex) {
+
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(error);
+    }
+
+
 }

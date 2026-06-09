@@ -41,15 +41,11 @@ public class UsuarioController {
 
     @GetMapping("/{id}/qr")
     public ResponseEntity<byte[]> obtenerQR(@PathVariable Long id) {
-        // Nota: Asegúrate de que tu interfaz UsuarioService tenga u obtenga el usuario por ID
-        // Si no lo tienes, puedes inyectar el repositorio temporalmente o usar tu flujo existente.
-        UsuarioResponseDTO usuario = usuarioService.listarUsuarios(Pageable.unpaged())
-                .stream()
-                .filter(u -> u.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        // Ya no descarga todos los usuarios de la BD a memoria.
+        // Llama de forma indexada y eficiente al contenido estructurado en JSON.
+        String qrJsonContent = usuarioService.obtenerQrContentString(id);
 
-        byte[] qrBytes = qrService.generarQR(usuario.getQrUuid(), 300, 300);
+        byte[] qrBytes = qrService.generarQR(qrJsonContent, 300, 300);
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_PNG)
                 .body(qrBytes);

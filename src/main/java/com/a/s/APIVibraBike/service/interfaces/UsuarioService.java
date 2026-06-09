@@ -8,4 +8,5 @@ public interface UsuarioService {
     UsuarioResponseDTO crearUsuario(UsuarioRequestDTO request);
     Page<UsuarioResponseDTO> listarUsuarios(Pageable pageable);
     UsuarioResponseDTO obtenerUsuario(Long id);
+    String obtenerQrContentString(Long id);
 }

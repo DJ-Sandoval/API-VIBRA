@@ -81,18 +81,23 @@ public class PDFService {
                 .setFontColor(ColorConstants.WHITE)
                 .setFixedPosition(48, 112, 120));
 
-        // ==================== QR (CORREGIDO) ====================
-        // Opción A: Usar directamente el UUID único (Recomendado para escáneres internos)
-        String textoQR = usuario.getQrUuid();
+        // ==================== QR MODIFICADO (JSON PAYLOAD) ====================
+        // Ahora instanciamos el DTO de datos y lo convertimos a un String JSON compacto
+        com.a.s.APIVibraBike.model.dto.UsuarioQRPayloadDTO payload = com.a.s.APIVibraBike.model.dto.UsuarioQRPayloadDTO.builder()
+                .qrUuid(usuario.getQrUuid())
+                .usuarioId(usuario.getId())
+                .nombreCompleto(usuario.getNombre() + " " + usuario.getApellidos())
+                .folio(usuario.getFolio())
+                .plan(usuario.getPlan())
+                .build();
 
-        // Opción B: Si necesitas que sea la URL completa del endpoint, descomenta la siguiente línea:
-        // String textoQR = "/api/v1/usuarios/" + usuario.getId() + "/qr";
+        String textoQR = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(payload);
 
         byte[] qrBytes = qrService.generarQR(textoQR, 300, 300);
 
         Image qrImage = new Image(ImageDataFactory.create(qrBytes));
         qrImage.scaleToFit(78, 78);
-        qrImage.setFixedPosition(148, 38);   // Más a la derecha
+        qrImage.setFixedPosition(148, 38);
         document.add(qrImage);
 
         // Marco del QR
@@ -101,7 +106,7 @@ public class PDFService {
         canvas.roundRectangle(145, 35, 84, 84, 10);
         canvas.stroke();
 
-        // ==================== Datos ====================
+        // ==================== Datos Basicos en PDF ====================
         String nombreCompleto = usuario.getNombre() + " " + usuario.getApellidos();
 
         textCanvas.add(new Paragraph(nombreCompleto)

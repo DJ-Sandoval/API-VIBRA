@@ -1,3 +1,5 @@
 Segunda Version:
+SISTEMA DE ASISTENCIA:
 * Registro de asistencia.
+* Listar en orden de llegada con estructura de datos.
 * Escaneo de qr con tarjeta para registrar Asistencia.

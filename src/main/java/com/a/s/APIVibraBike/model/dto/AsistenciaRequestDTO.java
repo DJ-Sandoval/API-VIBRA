@@ -1,12 +1,10 @@
 package com.a.s.APIVibraBike.model.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
 public class AsistenciaRequestDTO {
-
-    @NotBlank
-    private String qrUuid;
-
+    @NotNull(message = "El ID de usuario es requerido para registrar asistencia")
+    private Long usuarioId;
 }
