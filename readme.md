@@ -164,4 +164,4 @@ src
 
 ## 👨‍💻 Autor
 
-Desarrollado por el equipo de API-VIBRA.
+Desarrollado por ing.Armando & ing.Sofi
