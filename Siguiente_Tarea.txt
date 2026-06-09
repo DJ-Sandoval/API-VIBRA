@@ -1,0 +1,3 @@
+Segunda Version:
+* Registro de asistencia.
+* Escaneo de qr con tarjeta para registrar Asistencia.

@@ -1,36 +1,23 @@
 package com.a.s.APIVibraBike.service.impl;
+
+import com.a.s.APIVibraBike.model.entity.Usuario;
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.colors.ColorConstants;
-import com.itextpdf.kernel.font.PdfFontFactory;
-import com.itextpdf.kernel.geom.Rectangle;
-import com.itextpdf.kernel.pdf.PdfPage;
-import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
-import com.itextpdf.layout.Canvas;
-import com.itextpdf.layout.element.Cell;
-import com.itextpdf.layout.element.Div;
-import com.itextpdf.layout.element.Image;
-import com.itextpdf.layout.element.Paragraph;
-import com.itextpdf.layout.element.Table;
-import com.a.s.APIVibraBike.model.entity.Alumno;
-import com.itextpdf.kernel.colors.Color;
 import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.kernel.pdf.action.PdfAction;
+import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
+import com.itextpdf.layout.Canvas;
 import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.*;
-import com.itextpdf.layout.properties.HorizontalAlignment;
-import com.itextpdf.layout.properties.TextAlignment;
-import com.itextpdf.layout.properties.UnitValue;
-import com.itextpdf.layout.properties.VerticalAlignment;
+import com.itextpdf.layout.element.Image;
+import com.itextpdf.layout.element.Paragraph;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -38,136 +25,120 @@ public class PDFService {
 
     private final QRService qrService;
 
-    public byte[] generarTarjetaIndividual(Alumno alumno) {
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    public byte[] generarTarjetaDigital(Usuario usuario) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        try {
-            PdfWriter writer = new PdfWriter(baos);
-            PdfDocument pdfDoc = new PdfDocument(writer);
+        try (PdfWriter writer = new PdfWriter(baos);
+             PdfDocument pdfDoc = new PdfDocument(writer);
+             Document document = new Document(pdfDoc)) {
 
+            // === CORRECCIÓN PRINCIPAL ===
             PageSize cardSize = new PageSize(242, 152);
             pdfDoc.setDefaultPageSize(cardSize);
+            PdfPage page = pdfDoc.addNewPage();   // ← Agregamos la página primero
 
-            Document document = new Document(pdfDoc);
-
-            dibujarTarjeta(pdfDoc, document, alumno);
-
-            document.close();
+            dibujarTarjeta(pdfDoc, page, document, usuario);
 
         } catch (Exception e) {
-            throw new RuntimeException("Error al generar tarjeta", e);
+            throw new RuntimeException("Error al generar PDF de tarjeta digital", e);
         }
 
         return baos.toByteArray();
     }
 
-    private void dibujarTarjeta(
-            PdfDocument pdfDoc,
-            Document document,
-            Alumno alumno) throws Exception {
-
-        PdfPage page = pdfDoc.addNewPage();
+    private void dibujarTarjeta(PdfDocument pdfDoc, PdfPage page, Document document, Usuario usuario) throws Exception {
         PdfCanvas canvas = new PdfCanvas(page);
+        Canvas textCanvas = new Canvas(canvas, page.getPageSize());
 
-        Color azul = new DeviceRgb(30, 144, 255);
-        Color blanco = ColorConstants.WHITE;
-
+        DeviceRgb azul = new DeviceRgb(30, 144, 255);
         float width = page.getPageSize().getWidth();
         float height = page.getPageSize().getHeight();
 
-        // Fondo
+        // Fondo azul redondeado
         canvas.saveState();
         canvas.setFillColor(azul);
-        canvas.roundRectangle(0, 0, width, height, 20);
+        canvas.roundRectangle(0, 0, width, height, 15);
         canvas.fill();
         canvas.restoreState();
 
-        // Logo círculo
-        canvas.setFillColor(blanco);
-        canvas.circle(30, 120, 15);
-        canvas.fill();
+        // Logo Vibra Bike
+        textCanvas.add(new Paragraph("♡")
+                .setFontSize(18)
+                .setFontColor(ColorConstants.WHITE)
+                .setFixedPosition(20, 118, 30));
 
-        Canvas textCanvas = new Canvas(
-                canvas,
-                page.getPageSize()
-        );
+        textCanvas.add(new Paragraph("VIBRA")
+                .setBold()
+                .setFontSize(19)
+                .setFontColor(ColorConstants.WHITE)
+                .setFixedPosition(48, 122, 120));
 
-        textCanvas.add(
-                new Paragraph("♡")
-                        .setFontSize(16)
-                        .setFontColor(azul)
-                        .setFixedPosition(24, 112, 20)
-        );
+        textCanvas.add(new Paragraph("BIKE CENTER")
+                .setBold()
+                .setFontSize(7.5f)
+                .setFontColor(ColorConstants.WHITE)
+                .setFixedPosition(48, 112, 120));
 
-        textCanvas.add(
-                new Paragraph("VIBRA")
-                        .setBold()
-                        .setFontSize(18)
-                        .setFontColor(blanco)
-                        .setFixedPosition(50, 115, 100)
-        );
+        // ==================== QR (CORREGIDO) ====================
+        // Opción A: Usar directamente el UUID único (Recomendado para escáneres internos)
+        String textoQR = usuario.getQrUuid();
 
-        textCanvas.add(
-                new Paragraph("BIKE CENTER")
-                        .setBold()
-                        .setFontSize(8)
-                        .setFontColor(blanco)
-                        .setFixedPosition(50, 103, 100)
-        );
+        // Opción B: Si necesitas que sea la URL completa del endpoint, descomenta la siguiente línea:
+        // String textoQR = "/api/v1/usuarios/" + usuario.getId() + "/qr";
 
-        // QR
-        byte[] qrBytes = qrService.generarQR(
-                alumno.getQrUuid(),
-                150,
-                150
-        );
+        byte[] qrBytes = qrService.generarQR(textoQR, 300, 300);
 
-        Image qrImage = new Image(
-                ImageDataFactory.create(qrBytes)
-        );
-
-        qrImage.scaleToFit(80, 80);
-        qrImage.setFixedPosition(80, 40);
-
+        Image qrImage = new Image(ImageDataFactory.create(qrBytes));
+        qrImage.scaleToFit(78, 78);
+        qrImage.setFixedPosition(148, 38);   // Más a la derecha
         document.add(qrImage);
 
-        // Marco QR
-        canvas.setStrokeColor(blanco);
-        canvas.setLineWidth(2);
-        canvas.roundRectangle(
-                75,
-                35,
-                90,
-                90,
-                12
-        );
+        // Marco del QR
+        canvas.setStrokeColor(ColorConstants.WHITE);
+        canvas.setLineWidth(2.5f);
+        canvas.roundRectangle(145, 35, 84, 84, 10);
         canvas.stroke();
 
-        // Nombre
-        textCanvas.add(
-                new Paragraph(
-                        alumno.getNombre()
-                                + " "
-                                + alumno.getApellido()
-                )
-                        .setBold()
-                        .setFontSize(10)
-                        .setFontColor(blanco)
-                        .setFixedPosition(15, 15, 200)
-        );
+        // ==================== Datos ====================
+        String nombreCompleto = usuario.getNombre() + " " + usuario.getApellidos();
 
-        // Matrícula
-        textCanvas.add(
-                new Paragraph(
-                        "Matrícula: "
-                                + alumno.getMatricula()
-                )
-                        .setFontSize(8)
-                        .setFontColor(blanco)
-                        .setFixedPosition(15, 5, 200)
-        );
+        textCanvas.add(new Paragraph(nombreCompleto)
+                .setBold()
+                .setFontSize(11)
+                .setFontColor(ColorConstants.WHITE)
+                .setFixedPosition(18, 72, 125));
+
+        textCanvas.add(new Paragraph("Tel: " + usuario.getTelefono())
+                .setFontSize(8.5f)
+                .setFontColor(ColorConstants.WHITE)
+                .setFixedPosition(18, 58, 130));
+
+        String cumple = usuario.getFechaCumple() != null
+                ? usuario.getFechaCumple().format(DATE_FORMATTER)
+                : "N/A";
+
+        textCanvas.add(new Paragraph("Cumple: " + cumple)
+                .setFontSize(8.5f)
+                .setFontColor(ColorConstants.WHITE)
+                .setFixedPosition(18, 48, 130));
+
+        textCanvas.add(new Paragraph("Inicio: " + usuario.getFechaInicio().format(DATE_FORMATTER))
+                .setFontSize(8.5f)
+                .setFontColor(ColorConstants.WHITE)
+                .setFixedPosition(18, 38, 130));
+
+        textCanvas.add(new Paragraph("Plan: " + usuario.getPlan())
+                .setFontSize(8.5f)
+                .setFontColor(ColorConstants.WHITE)
+                .setFixedPosition(18, 28, 130));
+
+        textCanvas.add(new Paragraph("Folio: " + usuario.getFolio())
+                .setFontSize(8f)
+                .setFontColor(ColorConstants.WHITE)
+                .setFixedPosition(18, 15, 130));
 
         textCanvas.close();
     }
-
 }

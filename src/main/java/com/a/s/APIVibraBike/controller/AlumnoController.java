@@ -70,7 +70,7 @@ public class AlumnoController {
     }
     */
      
-
+    /*
     // Generar tarjeta individual para un alumno
     @GetMapping("/{id}/tarjeta")
     public ResponseEntity<byte[]> generarTarjetaIndividual(@PathVariable Long id) {
@@ -82,5 +82,7 @@ public class AlumnoController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=tarjeta_" + id + ".pdf")
                 .body(pdfBytes);
         }
+        */
+
     }
 

@@ -7,7 +7,8 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "usuarios", uniqueConstraints = {
         @UniqueConstraint(name = "uk_folio", columnNames = "folio"),
-        @UniqueConstraint(name = "uk_telefono", columnNames = "telefono")
+        @UniqueConstraint(name = "uk_telefono", columnNames = "telefono"),
+        @UniqueConstraint(name = "uk_qr_uuid", columnNames = "qr_uuid")
 })
 @Getter
 @Setter
@@ -42,4 +43,9 @@ public class Usuario {
     @Column(nullable = false, unique = true, length = 30)
     private String folio;
 
+    @Column(name = "qr_uuid", nullable = false, unique = true, length = 36)
+    private String qrUuid;
+
+    //@Column(name = "qr_url", length = 255)
+    //private String qrUrl;
 }

@@ -1,28 +1,21 @@
 package com.a.s.APIVibraBike.model.dto;
 
 import com.a.s.APIVibraBike.model.enums.Plan;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
 import java.time.LocalDate;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UsuarioResponseDTO {
+public class TarjetaResponseDTO {
     private Long id;
+    private Long usuarioId;
     private String nombre;
-    private String apellidos;
     private String telefono;
     private LocalDate fechaCumple;
     private LocalDate fechaInicio;
     private Plan plan;
-    private String folio;
     private Integer contadorClases;
-    private Long tarjetaId;
-    private String qrUuid;
-    private String qrUrl;
+    private LocalDate fechaCreacion;
 }
