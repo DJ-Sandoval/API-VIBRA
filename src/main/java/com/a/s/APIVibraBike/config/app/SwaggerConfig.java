@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.servers.Server;
                 title = "API VIBRA",
                 description = "Our app provides a operatings for system of asistence",
                 termsOfService = "www.unprogramadornace.com/terminos_y_condiciones",
-                version = "1.0.0",
+                version = "1.1.0",
                 contact = @Contact(
                         name = "Armando Sandoval & Sofia Chavez",
                         url = "https://unprogramadornace.com",

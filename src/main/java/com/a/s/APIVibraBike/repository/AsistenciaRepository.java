@@ -1,19 +1,22 @@
 package com.a.s.APIVibraBike.repository;
 
-import com.a.s.APIVibraBike.model.entity.Alumno;
 import com.a.s.APIVibraBike.model.entity.Asistencia;
+import com.a.s.APIVibraBike.model.enums.Horario;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
+@Repository
 public interface AsistenciaRepository extends JpaRepository<Asistencia, Long> {
 
-    List<Asistencia> findByAlumnoId(Long alumnoId);
+    // Para la regla de negocio de máximo 2 clases por día
+    long countByUsuarioIdAndFecha(Long usuarioId, LocalDate fecha);
 
-    boolean existsByAlumnoAndFechaHoraAfter(
-            Alumno alumno,
-            LocalDateTime fechaHora
-    );
+    // Para listar asistencias del día general (Ordenadas por llegada)
+    List<Asistencia> findByFechaOrderByHoraDesc(LocalDate fecha);
 
+    // Para segmentar los listados de horarios del día
+    List<Asistencia> findByFechaAndHorarioOrderByHoraAsc(LocalDate fecha, Horario horario);
 }

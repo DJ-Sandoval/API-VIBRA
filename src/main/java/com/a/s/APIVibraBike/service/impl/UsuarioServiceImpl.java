@@ -1,6 +1,7 @@
 package com.a.s.APIVibraBike.service.impl;
 
 import com.a.s.APIVibraBike.model.dto.TarjetaRequestDTO;
+import com.a.s.APIVibraBike.model.dto.UsuarioQRPayloadDTO;
 import com.a.s.APIVibraBike.model.dto.UsuarioRequestDTO;
 import com.a.s.APIVibraBike.model.dto.UsuarioResponseDTO;
 import com.a.s.APIVibraBike.model.entity.Tarjeta;
@@ -11,6 +12,7 @@ import com.a.s.APIVibraBike.service.exception.UsuarioDuplicadoException;
 import com.a.s.APIVibraBike.service.exception.UsuarioInvalidoException;
 import com.a.s.APIVibraBike.service.interfaces.TarjetaService;
 import com.a.s.APIVibraBike.service.interfaces.UsuarioService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -29,6 +31,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final TarjetaService tarjetaService;
     private final TarjetaRepository tarjetaRepository;
+    private final ObjectMapper objectMapper;
     private final QRService qrService;
 
 
@@ -76,6 +79,26 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .findById(id)
                 .orElseThrow(() -> new RuntimeException("Uusario no encontrado"));
         return mapToResponseDTO(usuario);
+    }
+
+    @Override
+    public String obtenerQrContentString(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        UsuarioQRPayloadDTO payload = UsuarioQRPayloadDTO.builder()
+                .qrUuid(usuario.getQrUuid())
+                .usuarioId(usuario.getId())
+                .nombreCompleto(usuario.getNombre() + " " + usuario.getApellidos())
+                .folio(usuario.getFolio())
+                .plan(usuario.getPlan())
+                .build();
+
+        try {
+            return objectMapper.writeValueAsString(payload);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al serializar la información del usuario para el QR", e);
+        }
     }
 
     private void validarRequest(UsuarioRequestDTO request) {
