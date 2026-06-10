@@ -2,4 +2,7 @@ Segunda Version:
 SISTEMA DE ASISTENCIA:
 * Registro de asistencia.
 * Listar en orden de llegada con estructura de datos.
-* Escaneo de qr con tarjeta para registrar Asistencia.
+
+REPORTES:
+* Generar reportes pdf de la lista de asistencia del dia.
+* Programar un spring scheduler para que envie los reportes pdf y excell a una cierta hora.
