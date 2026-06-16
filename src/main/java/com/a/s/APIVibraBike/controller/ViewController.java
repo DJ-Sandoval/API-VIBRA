@@ -30,11 +30,14 @@ public class ViewController {
         // Lista completa del día (conforme van llegando)
         model.addAttribute("asistenciasGeneral", asistenciaService.listarAsistenciasPorDia(hoy));
 
-        // Las 3 listas segmentadas
-        model.addAttribute("primerHorario", asistenciaService.listarAsistenciasPorHorario(hoy, Horario.PRIMER_HORARIO));
-        model.addAttribute("segundoHorario", asistenciaService.listarAsistenciasPorHorario(hoy, Horario.SEGUNDO_HORARIO));
-        model.addAttribute("tercerHorario", asistenciaService.listarAsistenciasPorHorario(hoy, Horario.TERCER_HORARIO));
-
+        // Horarios Matutinos
+        model.addAttribute("primerClase", asistenciaService.listarAsistenciasPorHorario(hoy, Horario.PRIMER_CLASE));
+        model.addAttribute("segundaClase", asistenciaService.listarAsistenciasPorHorario(hoy, Horario.SEGUNDA_CLASE));
+        model.addAttribute("terceraClase", asistenciaService.listarAsistenciasPorHorario(hoy, Horario.TERCERA_CLASE));
+        // Horarios Vespertinos
+        model.addAttribute("cuartaClase",  asistenciaService.listarAsistenciasPorHorario(hoy, Horario.CUARTA_CLASE));
+        model.addAttribute("quintaClase",  asistenciaService.listarAsistenciasPorHorario(hoy, Horario.QUINTA_CLASE));
+        model.addAttribute("sextaClase",   asistenciaService.listarAsistenciasPorHorario(hoy, Horario.SEXTA_CLASE));
         return "asistencia"; // Nombre de tu archivo html en src/main/resources/templates
     }
 }

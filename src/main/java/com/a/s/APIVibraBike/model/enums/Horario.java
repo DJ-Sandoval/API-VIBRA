@@ -2,9 +2,14 @@ package com.a.s.APIVibraBike.model.enums;
 import java.time.LocalTime;
 
 public enum Horario {
-    PRIMER_HORARIO(LocalTime.of(18, 0), LocalTime.of(18, 59, 59)),
-    SEGUNDO_HORARIO(LocalTime.of(19, 0), LocalTime.of(19, 59, 59)),
-    TERCER_HORARIO(LocalTime.of(20, 0), LocalTime.of(21, 0, 59));
+    // Horarios matutinos
+    PRIMER_CLASE(LocalTime.of(6, 0), LocalTime.of(6, 59, 59)),
+    SEGUNDA_CLASE(LocalTime.of(7, 0), LocalTime.of(7, 59, 59)),
+    TERCERA_CLASE(LocalTime.of(8, 0), LocalTime.of(9, 0, 59)),
+    // Horarios vespertinos
+    CUARTA_CLASE(LocalTime.of(18, 0), LocalTime.of(18, 59, 59)),
+    QUINTA_CLASE(LocalTime.of(19, 0), LocalTime.of(19, 59, 59)),
+    SEXTA_CLASE(LocalTime.of(20, 0), LocalTime.of(21, 0, 59));
 
     private final LocalTime horaInicio;
     private final LocalTime horaFin;

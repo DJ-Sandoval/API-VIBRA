@@ -1,0 +1,23 @@
+services:
+  vibra-api:
+    build: .
+    container_name: vibra-api
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-dev:3306/VibraBikeCenterBD?useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: josesas
+      SPRING_DATASOURCE_PASSWORD: 12345
+      SPRING_JPA_PROPERTIES_HIBERNATE_JDBC_TIME_ZONE: America/Mexico_City
+      TZ: America/Mexico_City
+      SPRINGDOC_SWAGGER_UI_DARK_MODE: true
+    restart: unless-stopped
+
+    networks:
+      - mysql_default
+
+networks:
+  mysql_default:
+    external: true
