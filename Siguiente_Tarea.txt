@@ -3,6 +3,25 @@ SISTEMA DE ASISTENCIA:
 * Registro de asistencia.
 * Listar en orden de llegada con estructura de datos.
 
+Monitoreo al API con Grafana y Prometheus
+
+Dockerizar API:
+* Hay que dockerizar el API para su correcto funcionamiento en multiples SO.
+* Administrar con Kubernetes el API pero esto es en el futuro.
+* Agregar CICD al proyecto con jenkins para hacer un deploy mas seguro.
+
 REPORTES:
 * Generar reportes pdf de la lista de asistencia del dia.
 * Programar un spring scheduler para que envie los reportes pdf y excell a una cierta hora.
+
+INICIO DE SESION:
+* Login con roles:
+-ADMIN:
+Admin tiene acceso a todo a todooooo.
+, RECEPCION:
+Recepcion tiene acceso a asistencias y listar usuarios registrados ala asistencia, registrar y modificar datos de usuario,
+USER:
+Solo tiene acceso a ver su tarjeta digital, numero de clases y registrar su asistencia.
+
+Reservas:
+Dejar abierto de lunes a viernes para que los usuarios puedan reservar clase el viernes y sbaado por ejemplo reservar

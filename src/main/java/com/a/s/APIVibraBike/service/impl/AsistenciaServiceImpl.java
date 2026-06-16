@@ -46,10 +46,10 @@ public class AsistenciaServiceImpl implements AsistenciaService {
             throw new LimiteAsistenciaExcedidoException("El usuario ya no cuenta con clases disponibles en su plan actual.");
         }
 
-        // 3. Validar regla de negocio: Máximo 2 asistencias por día
+        // 3. Validar regla de negocio: Máximo 3 asistencias por día
         long asistenciasHoy = asistenciaRepository.countByUsuarioIdAndFecha(usuario.getId(), hoy);
-        if (asistenciasHoy >= 2) {
-            throw new LimiteAsistenciaExcedidoException("Límite diario alcanzado. El usuario ya registró 2 clases el día de hoy.");
+        if (asistenciasHoy >= 3) {
+            throw new LimiteAsistenciaExcedidoException("Límite diario alcanzado. El usuario ya registró 3 clases el día de hoy.");
         }
 
         // 4. Determinar horario según la hora del servidor

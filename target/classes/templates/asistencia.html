@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vibra Bike Center - Registro de Asistencia</title>
+    <link rel="icon" type="image/jpg" th:href="@{/LogoVibra.jpg}" href="/LogoVibra.jpg">
+    <link rel="apple-touch-icon" th:href="@{/LogoVibra.jpg}" href="/LogoVibra.jpg">
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         * {
@@ -262,37 +264,69 @@
 
     <h2 class="section-title">Usuarios Registrados por Bloques Horarios</h2>
     <div class="horarios-grid">
-
+        <!-- HORARIOS MATUTINOS -->
         <div class="horario-card primero">
-            <h3>Primer Horario <span>6:00 PM - 6:59 PM</span></h3>
+            <h3>Primera Clase <span>6:00 AM - 6:59 AM</span></h3>
             <ul class="list-usuarios">
-                <li th:each="asist : ${primerHorario}">
+                <li th:each="asist : ${primerClase}">
                     <span th:text="${asist.nombreUsuario}">Juan Pérez</span>
-                    <span class="time-badge" th:text="${#temporals.format(asist.horaRegistro, 'HH:mm')}">18:05</span>
+                    <span class="time-badge" th:text="${#temporals.format(asist.horaRegistro, 'HH:mm')}">06:05</span>
                 </li>
-                <li class="no-data" th:if="${#lists.isEmpty(primerHorario)}">Sin alumnos en este bloque.</li>
+                <li class="no-data" th:if="${#lists.isEmpty(primerClase)}">Sin alumnos en este bloque.</li>
             </ul>
         </div>
 
         <div class="horario-card segundo">
-            <h3>Segundo Horario <span>7:00 PM - 7:59 PM</span></h3>
+            <h3>Segunda Clase <span>7:00 AM - 7:59 AM</span></h3>
             <ul class="list-usuarios">
-                <li th:each="asist : ${segundoHorario}">
+                <li th:each="asist : ${segundaClase}">
                     <span th:text="${asist.nombreUsuario}">María López</span>
-                    <span class="time-badge" th:text="${#temporals.format(asist.horaRegistro, 'HH:mm')}">19:20</span>
+                    <span class="time-badge" th:text="${#temporals.format(asist.horaRegistro, 'HH:mm')}">07:10</span>
                 </li>
-                <li class="no-data" th:if="${#lists.isEmpty(segundoHorario)}">Sin alumnos en este bloque.</li>
+                <li class="no-data" th:if="${#lists.isEmpty(segundaClase)}">Sin alumnos en este bloque.</li>
             </ul>
         </div>
 
         <div class="horario-card tercero">
-            <h3>Tercer Horario <span>8:00 PM - 9:00 PM</span></h3>
+            <h3>Tercera Clase <span>8:00 AM - 9:00 AM</span></h3>
             <ul class="list-usuarios">
-                <li th:each="asist : ${tercerHorario}">
+                <li th:each="asist : ${terceraClase}">
+                    <span th:text="${asist.nombreUsuario}">Carlos Mendoza</span>
+                    <span class="time-badge" th:text="${#temporals.format(asist.horaRegistro, 'HH:mm')}">08:02</span>
+                </li>
+                <li class="no-data" th:if="${#lists.isEmpty(terceraClase)}">Sin alumnos en este bloque.</li>
+            </ul>
+        </div>
+        <div class="horario-card primero">
+            <h3>Cuarta Clase <span>6:00 PM - 6:59 PM</span></h3>
+            <ul class="list-usuarios">
+                <li th:each="asist : ${cuartaClase}">
+                    <span th:text="${asist.nombreUsuario}">Juan Pérez</span>
+                    <span class="time-badge" th:text="${#temporals.format(asist.horaRegistro, 'HH:mm')}">18:05</span>
+                </li>
+                <li class="no-data" th:if="${#lists.isEmpty(cuartaClase)}">Sin alumnos en este bloque.</li>
+            </ul>
+        </div>
+
+        <div class="horario-card segundo">
+            <h3>Quinta Clase <span>7:00 PM - 7:59 PM</span></h3>
+            <ul class="list-usuarios">
+                <li th:each="asist : ${quintaClase}">
+                    <span th:text="${asist.nombreUsuario}">María López</span>
+                    <span class="time-badge" th:text="${#temporals.format(asist.horaRegistro, 'HH:mm')}">19:20</span>
+                </li>
+                <li class="no-data" th:if="${#lists.isEmpty(quintaClase)}">Sin alumnos en este bloque.</li>
+            </ul>
+        </div>
+
+        <div class="horario-card tercero">
+            <h3>Sexta Clase Horario <span>8:00 PM - 9:00 PM</span></h3>
+            <ul class="list-usuarios">
+                <li th:each="asist : ${sextaClase}">
                     <span th:text="${asist.nombreUsuario}">Carlos Mendoza</span>
                     <span class="time-badge" th:text="${#temporals.format(asist.horaRegistro, 'HH:mm')}">20:02</span>
                 </li>
-                <li class="no-data" th:if="${#lists.isEmpty(tercerHorario)}">Sin alumnos en este bloque.</li>
+                <li class="no-data" th:if="${#lists.isEmpty(sextaClase)}">Sin alumnos en este bloque.</li>
             </ul>
         </div>
 
