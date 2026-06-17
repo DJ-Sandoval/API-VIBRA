@@ -2,10 +2,8 @@ services:
   vibra-api:
     build: .
     container_name: vibra-api
-
     ports:
       - "8080:8080"
-
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql-dev:3306/VibraBikeCenterBD?useSSL=false&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: josesas
@@ -13,11 +11,43 @@ services:
       SPRING_JPA_PROPERTIES_HIBERNATE_JDBC_TIME_ZONE: America/Mexico_City
       TZ: America/Mexico_City
       SPRINGDOC_SWAGGER_UI_DARK_MODE: true
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics,prometheus
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW-DETAILS: always
+      MANAGEMENT_ENDPOINT_PROMETHEUS_ENABLED: true
     restart: unless-stopped
-
     networks:
       - mysql_default
+      - monitoring
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring
 
 networks:
   mysql_default:
     external: true
+  monitoring:
+    driver: bridge
+
+volumes:
+  grafana_data:
