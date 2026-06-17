@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${diaNombre} + ' · VibraBike'">Reservas · VibraBike</title>
+    <link rel="icon" type="image/png" th:href="@{/reserva.png}" href="/reserva.png">
+    <link rel="apple-touch-icon" th:href="@{/reserva.png}" href="/reserva.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --negro: #15140f;
+            --carbon: #232019;
+            --carbon-claro: #34302a;
+            --papel: #f4f1ea;
+            --papel-linea: #e3ddcf;
+            --gris-medio: #8c8576;
+            --naranja: #ff5a1f;
+            --naranja-oscuro: #c8430f;
+            --verde-libre: #2f7a52;
+            --verde-bg: #e1f0e6;
+            --rojo-ocupada: #b8341f;
+            --rojo-bg: #f5e2dd;
+            --radio: 10px;
+            --sombra: 0 1px 2px rgba(21,20,15,0.06), 0 4px 12px rgba(21,20,15,0.06);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--papel);
+            color: var(--negro);
+            font-family: 'Inter', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .ribete {
+            height: 6px;
+            background: repeating-linear-gradient(
+                -45deg,
+                var(--naranja) 0 14px,
+                var(--negro) 14px 28px
+            );
+        }
+
+        .contenedor {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 28px 20px 80px;
+        }
+
+        /* ── ENCABEZADO ───────────────────────────────────────────────── */
+
+        .encabezado {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 24px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+
+        .titulo-dia {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: clamp(2.4rem, 6vw, 3.6rem);
+            line-height: 0.92;
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+            margin: 0;
+        }
+
+        .titulo-dia .acento { color: var(--naranja); }
+
+        .meta-fecha {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--gris-medio);
+            margin-top: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .selector-horarios {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .chip-horario {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 9px 14px;
+            border-radius: 999px;
+            border: 1.5px solid var(--carbon-claro);
+            background: transparent;
+            color: var(--carbon);
+            text-decoration: none;
+            white-space: nowrap;
+            transition: all 0.15s ease;
+        }
+
+        .chip-horario.activo {
+            background: var(--negro);
+            color: var(--papel);
+            border-color: var(--negro);
+        }
+
+        .chip-horario:hover:not(.activo) {
+            border-color: var(--naranja);
+            color: var(--naranja-oscuro);
+        }
+
+        /* ── PANEL: MAPA DE BICIS ─────────────────────────────────────── */
+
+        .panel {
+            background: #ffffff;
+            border: 1px solid var(--papel-linea);
+            border-radius: var(--radio);
+            box-shadow: var(--sombra);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--papel-linea);
+            background: var(--papel);
+        }
+
+        .panel-header h2 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin: 0;
+        }
+
+        .leyenda {
+            display: flex;
+            gap: 14px;
+            font-size: 0.75rem;
+            color: var(--gris-medio);
+        }
+
+        .leyenda span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .punto {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .punto.libre { background: var(--verde-libre); }
+        .punto.ocupada { background: var(--rojo-ocupada); }
+        .punto.seleccionada { background: var(--naranja); }
+
+        .mapa-zona {
+            padding: 32px 28px 24px;
+            position: relative;
+        }
+
+        .mapa-coach {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        .mapa-coach span {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            color: var(--gris-medio);
+            border: 1px solid var(--papel-linea);
+            padding: 5px 16px;
+            border-radius: 999px;
+        }
+
+        .mapa-bicis {
+            display: flex;
+            gap: 28px;
+            align-items: flex-start;
+        }
+
+        .filas-bicis {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .fila-bici {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+        }
+
+        .fila-bici.escalon-1 { padding-left: 0; }
+        .fila-bici.escalon-2 { padding-left: 36px; }
+        .fila-bici.escalon-3 { padding-left: 0; justify-content: flex-start; padding-left: 8px; }
+        .fila-bici.escalon-4 { padding-left: 92px; justify-content: flex-start; }
+
+        .bici {
+            position: relative;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.12s ease, box-shadow 0.12s ease;
+            background: var(--verde-bg);
+            color: var(--verde-libre);
+            box-shadow: inset 0 0 0 2px rgba(47,122,82,0.25);
+        }
+
+        .bici:hover:not(.bici-ocupada) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(21,20,15,0.18);
+        }
+
+        .bici-ocupada {
+            background: var(--rojo-bg);
+            color: var(--rojo-ocupada);
+            box-shadow: inset 0 0 0 2px rgba(184,52,31,0.2);
+            cursor: not-allowed;
+        }
+
+        .bici-ocupada::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: repeating-linear-gradient(
+                -45deg,
+                transparent 0 4px,
+                rgba(184,52,31,0.18) 4px 6px
+            );
+        }
+
+        .bici-seleccionada {
+            background: var(--naranja);
+            color: #fff;
+            box-shadow: 0 0 0 3px rgba(255,90,31,0.25), 0 4px 10px rgba(200,67,15,0.35);
+            transform: translateY(-2px);
+        }
+
+        .columna-ingreso {
+            width: 34px;
+            background: var(--carbon);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px 0;
+            align-self: stretch;
+        }
+
+        .columna-ingreso span {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            color: var(--papel);
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+
+        .resumen-seleccion {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 16px 20px;
+            border-top: 1px solid var(--papel-linea);
+            background: var(--papel);
+            flex-wrap: wrap;
+        }
+
+        .resumen-seleccion p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--carbon);
+        }
+
+        .resumen-seleccion strong {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--naranja-oscuro);
+        }
+
+        .contador-disponibilidad {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            color: var(--gris-medio);
+        }
+
+        /* ── FORMULARIO DE REGISTRO ───────────────────────────────────── */
+
+        .form-registro {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+            align-items: end;
+        }
+
+        .campo {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .campo label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--gris-medio);
+        }
+
+        .campo input,
+        .campo select {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.92rem;
+            padding: 10px 12px;
+            border: 1.5px solid var(--papel-linea);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--negro);
+        }
+
+        .campo input:focus,
+        .campo select:focus {
+            outline: none;
+            border-color: var(--naranja);
+            box-shadow: 0 0 0 3px rgba(255,90,31,0.12);
+        }
+
+        .btn-reservar {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 0.92rem;
+            background: var(--naranja);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 11px 22px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            grid-column: span 1;
+        }
+
+        .btn-reservar:hover { background: var(--naranja-oscuro); }
+
+        .btn-reservar:focus-visible {
+            outline: 3px solid var(--carbon);
+            outline-offset: 2px;
+        }
+
+        /* ── TABLA DE ASISTENTES ──────────────────────────────────────── */
+
+        .tabla-wrap { overflow-x: auto; }
+
+        table.asistentes {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            min-width: 640px;
+        }
+
+        table.asistentes thead th {
+            text-align: left;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--gris-medio);
+            background: var(--papel);
+            padding: 12px 16px;
+            border-bottom: 1.5px solid var(--carbon);
+            position: sticky;
+            top: 0;
+        }
+
+        table.asistentes td {
+            padding: 13px 16px;
+            border-bottom: 1px solid var(--papel-linea);
+            white-space: nowrap;
+        }
+
+        table.asistentes tbody tr:hover { background: #fbfaf6; }
+
+        td.col-no {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            color: var(--naranja-oscuro);
+            width: 40px;
+        }
+
+        td.col-folio {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--gris-medio);
+        }
+
+        .badge-plan {
+            display: inline-block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            padding: 3px 10px;
+            border-radius: 999px;
+            background: var(--carbon);
+            color: var(--papel);
+        }
+
+        .fila-vacia td {
+            text-align: center;
+            color: var(--gris-medio);
+            font-style: italic;
+            padding: 36px 16px;
+        }
+
+        @media (max-width: 640px) {
+            .mapa-zona { padding: 24px 12px 18px; }
+            .fila-bici { gap: 8px; }
+            .fila-bici.escalon-2 { padding-left: 18px; }
+            .fila-bici.escalon-4 { padding-left: 44px; }
+            .bici { width: 38px; height: 38px; font-size: 0.75rem; }
+            .columna-ingreso { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="ribete"></div>
+
+<div class="contenedor">
+
+    <!-- ── ENCABEZADO ─────────────────────────────────────────────── -->
+    <header class="encabezado">
+        <div>
+            <h1 class="titulo-dia">
+                <span th:text="${diaNombre}">Sábado</span><span class="acento">.</span>
+            </h1>
+            <p class="meta-fecha" th:text="${fechaClase}">2026-06-20</p>
+        </div>
+
+        <nav class="selector-horarios">
+            <a th:each="h : ${horariosDelDia}"
+               th:href="@{/reservas/vista(fecha=${fechaClase}, horario=${h.horario})}"
+               th:text="${h.etiquetaHorario}"
+               th:class="${h.horario == horarioSeleccionado} ? 'chip-horario activo' : 'chip-horario'">
+                8:00 – 9:00
+            </a>
+        </nav>
+    </header>
+
+    <!-- ── MAPA DE BICIS ──────────────────────────────────────────── -->
+    <section class="panel">
+        <div class="panel-header">
+            <h2>Selecciona tu lugar</h2>
+            <div class="leyenda">
+                <span><i class="punto libre"></i> Libre</span>
+                <span><i class="punto ocupada"></i> Ocupada</span>
+                <span><i class="punto seleccionada"></i> Tu selección</span>
+            </div>
+        </div>
+
+        <div class="mapa-zona">
+            <div class="mapa-coach"><span>COACH</span></div>
+
+            <form id="form-mapa" method="get" th:action="@{/reservas/vista}">
+                <input type="hidden" name="fecha" th:value="${fechaClase}">
+                <input type="hidden" name="horario" th:value="${horarioSeleccionado}">
+
+                <div class="mapa-bicis">
+                    <div class="filas-bicis">
+
+                        <!-- Fila 1: bicis 10 → 1 (orden visual de tu hoja) -->
+                        <div class="fila-bici escalon-1">
+                            <button type="button" th:each="n : ${#numbers.sequence(10, 1, -1)}"
+                                    class="bici"
+                                    th:classappend="${#sets.contains(bicisOcupadas, n)} ? 'bici-ocupada' : ''"
+                                    th:attr="data-bici=${n}"
+                                    th:disabled="${#sets.contains(bicisOcupadas, n)}"
+                                    th:text="${n}"
+                                    onclick="seleccionarBici(this)">1</button>
+                        </div>
+
+                        <!-- Fila 2: bicis 11 → 19 -->
+                        <div class="fila-bici escalon-2">
+                            <button type="button" th:each="n : ${#numbers.sequence(11, 19)}"
+                                    class="bici"
+                                    th:classappend="${#sets.contains(bicisOcupadas, n)} ? 'bici-ocupada' : ''"
+                                    th:attr="data-bici=${n}"
+                                    th:disabled="${#sets.contains(bicisOcupadas, n)}"
+                                    th:text="${n}"
+                                    onclick="seleccionarBici(this)">11</button>
+                        </div>
+
+                        <!-- Fila 3: bicis 20 → 27 -->
+                        <div class="fila-bici escalon-3">
+                            <button type="button" th:each="n : ${#numbers.sequence(20, 27)}"
+                                    class="bici"
+                                    th:classappend="${#sets.contains(bicisOcupadas, n)} ? 'bici-ocupada' : ''"
+                                    th:attr="data-bici=${n}"
+                                    th:disabled="${#sets.contains(bicisOcupadas, n)}"
+                                    th:text="${n}"
+                                    onclick="seleccionarBici(this)">20</button>
+                        </div>
+
+                        <!-- Fila 4: bicis 28 → 31 -->
+                        <div class="fila-bici escalon-4">
+                            <button type="button" th:each="n : ${#numbers.sequence(28, 31)}"
+                                    class="bici"
+                                    th:classappend="${#sets.contains(bicisOcupadas, n)} ? 'bici-ocupada' : ''"
+                                    th:attr="data-bici=${n}"
+                                    th:disabled="${#sets.contains(bicisOcupadas, n)}"
+                                    th:text="${n}"
+                                    onclick="seleccionarBici(this)">28</button>
+                        </div>
+
+                    </div>
+
+                    <div class="columna-ingreso"><span>INGRESO</span></div>
+                </div>
+            </form>
+        </div>
+
+        <div class="resumen-seleccion">
+            <p>Bici seleccionada: <strong id="texto-bici-elegida">ninguna</strong></p>
+            <p class="contador-disponibilidad">
+                <span th:text="${totalDisponibles}">25</span> de
+                <span th:text="${totalBicis}">31</span> disponibles
+            </p>
+        </div>
+    </section>
+
+    <!-- ── FORMULARIO DE RESERVA ─────────────────────────────────────── -->
+    <section class="panel">
+        <div class="panel-header">
+            <h2>Registrar reserva</h2>
+        </div>
+
+        <form class="form-registro" method="post" th:action="@{/api/v1/reservas}" id="form-reserva">
+            <input type="hidden" name="fechaClase" th:value="${fechaClase}">
+            <input type="hidden" name="horario" th:value="${horarioSeleccionado}">
+            <input type="hidden" name="numeroBici" id="input-numero-bici">
+
+            <div class="campo">
+                <label for="usuarioId">ID usuario</label>
+                <input type="number" id="usuarioId" name="usuarioId" placeholder="Folio o ID" required>
+            </div>
+
+            <div class="campo">
+                <label for="metodoPago">Método de pago</label>
+                <select id="metodoPago" name="metodoPago" required>
+                    <option value="">Selecciona</option>
+                    <option value="EFECTIVO">Efectivo</option>
+                    <option value="TARJETA">Tarjeta</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-reservar">Confirmar reserva</button>
+        </form>
+    </section>
+
+    <!-- ── TABLA DE ASISTENTES ───────────────────────────────────────── -->
+    <section class="panel">
+        <div class="panel-header">
+            <h2>Lista de registrados</h2>
+            <span class="contador-disponibilidad">
+                <span th:text="${asistentes.size()}">0</span> reservas
+            </span>
+        </div>
+
+        <div class="tabla-wrap">
+            <table class="asistentes">
+                <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nombre</th>
+                    <th>Contacto</th>
+                    <th>Cumple</th>
+                    <th>Plan</th>
+                    <th>Folio</th>
+                    <th>Bici</th>
+                    <th>Pago</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${asistentes.isEmpty()}" class="fila-vacia">
+                    <td colspan="8">Aún no hay reservas para este horario</td>
+                </tr>
+                <tr th:each="a, iter : ${asistentes}">
+                    <td class="col-no" th:text="${iter.count}">1</td>
+                    <td th:text="${a.nombre}">Ana García</td>
+                    <td th:text="${a.contacto}">3121234567</td>
+                    <td th:text="${a.cumple != null ? #temporals.format(a.cumple, 'dd/MM') : '—'}">10/03</td>
+                    <td><span class="badge-plan" th:text="${a.plan}">MENSUAL</span></td>
+                    <td class="col-folio" th:text="${a.folio}">VB-0042</td>
+                    <td th:text="${a.numeroBici}">5</td>
+                    <td th:text="${a.metodoPago}">EFECTIVO</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    function seleccionarBici(btn) {
+        if (btn.disabled) return;
+        document.querySelectorAll('.bici').forEach(b => b.classList.remove('bici-seleccionada'));
+        btn.classList.add('bici-seleccionada');
+        const numero = btn.getAttribute('data-bici');
+        document.getElementById('input-numero-bici').value = numero;
+        document.getElementById('texto-bici-elegida').textContent = '#' + numero;
+    }
+
+    document.getElementById('form-reserva').addEventListener('submit', function (e) {
+        if (!document.getElementById('input-numero-bici').value) {
+            e.preventDefault();
+            alert('Selecciona una bici en el mapa antes de confirmar.');
+        }
+    });
+</script>
+
+</body>
+</html>
